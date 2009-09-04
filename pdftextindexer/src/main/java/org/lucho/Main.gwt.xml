@@ -5,5 +5,6 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.extjs.gxt.ui.GXT'/>
   <entry-point class='org.lucho.client.Main'/>
+  <servlet path="/uploadHandler" class="org.lucho.upload.UploadServlet"/>
 </module>
 
