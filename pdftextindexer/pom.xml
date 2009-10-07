@@ -13,6 +13,11 @@
       <version>2.4</version>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.4</version>
+    </dependency>
+    <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
       <version>1.2.1</version>
@@ -57,19 +62,19 @@
         <version>3.8</version>
     </dependency>
     
-    <!-- gxt -->
+    <!-- gxt 
     <dependency>
         <groupId>com.extjs</groupId>
         <artifactId>gxt</artifactId>
         <version>2.0.1</version>
-    </dependency>
+    </dependency> -->
     
-    <!-- smartgwt -->
+    <!-- smartgwt
     <dependency>
         <groupId>com.smartgwt</groupId>
         <artifactId>smartgwt</artifactId>
         <version>1.2</version>
-    </dependency>
+    </dependency>  -->
     
     <!-- gwt -->
     <dependency>
@@ -142,6 +147,9 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>gwt-maven-plugin</artifactId>
         <version>1.1</version>
+        <!-- <configuration>
+    		<runTarget>org.lucho.client.Main/</runTarget>
+    	</configuration>  -->
         <executions>
           <execution>
             <goals>
