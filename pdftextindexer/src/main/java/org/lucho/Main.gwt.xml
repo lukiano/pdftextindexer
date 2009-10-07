@@ -6,7 +6,7 @@
   <inherits name="com.google.gwt.user.theme.standard.Standard"/>
   
   <entry-point class='org.lucho.client.Main'/>
-  <!-- servlet path="/uploadHandler" class="org.lucho.server.upload.UploadServlet"/>  -->
+  <servlet path="/uploadHandler" class="org.lucho.server.upload.UploadServlet" />
   <servlet path="/searchRemoteService" class="org.lucho.server.SearchRemoteServiceImpl"/>
 </module>
 

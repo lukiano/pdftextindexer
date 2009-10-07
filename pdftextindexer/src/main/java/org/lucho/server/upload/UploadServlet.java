@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -13,17 +14,29 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.lucho.client.Constants;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+@Singleton
 public class UploadServlet extends HttpServlet {
+	
+	@Inject
+	private ServletContext servletContext;
+	
+	@Inject
+	private FileItemFactory fileItemFactory;
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4549942139175529422L;
 
+	/**
+	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
 	public void doPost(final HttpServletRequest req, final HttpServletResponse resp)
 			throws ServletException, IOException {
 
@@ -36,7 +49,7 @@ public class UploadServlet extends HttpServlet {
 		}
 		String realFolder = this.getServletContext().getRealPath(items[1].getString());
 		String targetName = stripPath(items[0].getName());
-		File targetFile =new File(realFolder, targetName); 
+		File targetFile = new File(realFolder, targetName); 
 		if (targetFile.exists()) {
 			resp.getWriter().write("Sorry, a file with that name already exists in the selected folder");
 			return;
@@ -51,7 +64,7 @@ public class UploadServlet extends HttpServlet {
 		resp.getWriter().write("File successfully uploaded");
 	}
 
-	private String stripPath(String name) {
+	String stripPath(String name) {
 		// doc says that Opera may bring the full path. We only need the name
 		if (name.lastIndexOf('\\') > 0)
 			name = name.substring(name.indexOf('\\') + 1);
@@ -62,8 +75,7 @@ public class UploadServlet extends HttpServlet {
 
 	@SuppressWarnings("unchecked")
 	private FileItem[] getFileItem(final HttpServletRequest req) {
-		FileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
+		ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
 		
 		// 0: uploading file
 		// 1: folder target
@@ -90,6 +102,10 @@ public class UploadServlet extends HttpServlet {
 		}
 
 		return result;
+	}
+
+	public ServletContext getServletContext() {
+		return servletContext;
 	}
 
 }
