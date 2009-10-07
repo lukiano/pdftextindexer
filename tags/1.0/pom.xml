@@ -1,0 +1,185 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.lucho</groupId>
+  <artifactId>pdftextindexer</artifactId>
+  <packaging>war</packaging>
+  <name>Dridco Text Indexer</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <dependencies>
+    <!--  log -->
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.9</version>
+    </dependency>
+  
+    <!--  commons -->
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.2.1</version>
+    </dependency>
+    
+    <!-- lucene -->
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-highlighter</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-snowball</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    
+    <!-- pdfbox -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>0.8.0-incubator-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+        <groupId>bouncycastle</groupId>
+        <artifactId>bcmail-jdk14</artifactId>
+        <version>136</version>
+    </dependency>
+    <dependency>
+        <groupId>bouncycastle</groupId>
+        <artifactId>bcprov-jdk14</artifactId>
+        <version>136</version>
+    </dependency>
+    <dependency>
+        <groupId>com.ibm.icu</groupId>
+        <artifactId>icu4j</artifactId>
+        <version>3.8</version>
+    </dependency>
+    
+    <!-- gxt 
+    <dependency>
+        <groupId>com.extjs</groupId>
+        <artifactId>gxt</artifactId>
+        <version>2.0.1</version>
+    </dependency> -->
+    
+    <!-- smartgwt
+    <dependency>
+        <groupId>com.smartgwt</groupId>
+        <artifactId>smartgwt</artifactId>
+        <version>1.2</version>
+    </dependency>  -->
+    
+    <!-- gwt -->
+    <dependency>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt-servlet</artifactId>
+        <version>1.7.0</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt-user</artifactId>
+        <version>1.7.0</version>
+        <scope>provided</scope>
+    </dependency>
+    
+    <!-- guice -->
+    <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>2.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.inject.extensions</groupId>
+        <artifactId>guice-servlet</artifactId>
+        <version>2.0</version>
+    </dependency>
+
+    <!-- junit -->
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.7</version>
+		<scope>test</scope>
+	</dependency>
+    
+    <!-- mockito -->
+	<dependency>
+		<groupId>org.mockito</groupId>
+		<artifactId>mockito-all</artifactId>
+		<version>1.8.0</version>
+		<scope>test</scope>
+	</dependency>
+    
+  </dependencies>
+  <build>
+    <outputDirectory>war/WEB-INF/classes</outputDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.0.2</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <configuration>
+    		<wtpmanifest>true</wtpmanifest>
+			<wtpapplicationxml>true</wtpapplicationxml>
+            <wtpversion>2.0</wtpversion>
+    	</configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.0.2</version>
+        <configuration>
+          <warSourceDirectory>war</warSourceDirectory>
+        </configuration>
+      </plugin>
+	  <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>gwt-maven-plugin</artifactId>
+        <version>1.1</version>
+        <!-- <configuration>
+    		<runTarget>org.lucho.client.Main/</runTarget>
+    	</configuration>  -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>generateAsync</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>  
+  
+  	<repositories>
+		<repository>
+			<id>smartgwt</id>
+			<name>SmartGWT Maven2 Repository</name>
+			<url>http://www.smartclient.com/maven2</url>
+		</repository>
+	</repositories>
+  
+</project>
