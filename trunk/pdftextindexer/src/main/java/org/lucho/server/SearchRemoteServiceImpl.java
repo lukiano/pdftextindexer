@@ -1,7 +1,11 @@
 package org.lucho.server;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
 
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.queryParser.ParseException;
@@ -11,13 +15,23 @@ import org.lucho.client.SearchRemoteService;
 import org.lucho.server.lucene.IndexFiles;
 import org.lucho.server.lucene.SearchFiles;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.inject.Inject;
 
-public class SearchRemoteServiceImpl extends RemoteServiceServlet implements SearchRemoteService {
+@RemoteServiceRelativePath("searchRemoteService")
+public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemoteService {
 	
-	private SearchFiles searchFiles = new SearchFiles();
-	
-	private IndexFiles indexFiles = new IndexFiles();
+	@Inject
+	private ServletContext servletContext;
+
+	@Inject
+	private SearchFiles searchFiles;
+
+	@Inject
+	private FileFilter searchFilter;
+
+	@Inject
+	private IndexFiles indexFiles;
 
 	/**
 	 * Auto generated serial id
@@ -56,7 +70,7 @@ public class SearchRemoteServiceImpl extends RemoteServiceServlet implements Sea
 	}
 	
 	private void addFile(Node node, File file) {
-		File[] children = file.listFiles(new PDFFilter());
+		File[] children = file.listFiles(searchFilter);
 		if (children != null) {
 			int length = children.length;
 			node.setChildren(new Node[length]);
@@ -87,6 +101,10 @@ public class SearchRemoteServiceImpl extends RemoteServiceServlet implements Sea
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public ServletContext getServletContext() {
+		return servletContext;
 	}
 
 

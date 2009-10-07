@@ -3,26 +3,21 @@
 	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 	<display-name>pdftextindexer</display-name>
-	<servlet>
-		<servlet-name>SearchRemoteService</servlet-name>
-		<servlet-class>org.lucho.server.SearchRemoteServiceImpl</servlet-class>
-	</servlet>
-	<servlet>
-		<servlet-name>UploadService</servlet-name>
-		<servlet-class>org.lucho.server.upload.UploadServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>SearchRemoteService</servlet-name>
-		<url-pattern>
-            /searchRemoteService
-        </url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>UploadService</servlet-name>
-		<url-pattern>
-            /uploadHandler
-        </url-pattern>
-	</servlet-mapping>
+
+	<filter>
+		<filter-name>guiceFilter</filter-name>
+		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>guiceFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<listener>
+		<listener-class>org.lucho.server.guice.GuiceContextListener</listener-class>
+	</listener>
+	
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
