@@ -7,8 +7,6 @@ import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.queryParser.ParseException;
 import org.lucho.client.Constants;
 import org.lucho.client.Node;
 import org.lucho.client.SearchRemoteService;
@@ -38,17 +36,8 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	 */
 	private static final long serialVersionUID = 1420839684628425128L;
 
-	public Node[] searchByText(String text) {
-		File[] results;
-		try {
-			results = searchFiles.search(text, this.getFile(Constants.INDEX_DIR));
-		} catch (CorruptIndexException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (ParseException e) {
-			throw new RuntimeException(e);
-		}
+	public Node[] searchByText(String text) throws IOException {
+		File[] results = searchFiles.search(text);
 		Node[] nodes = new Node[results.length];
 		for (int i = 0; i < nodes.length; i++) {
 			File file = results[i];
@@ -95,12 +84,8 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 		return newNode;
 	}
 
-	public void reindex() {
-		try {
-			indexFiles.index(this.getFile(Constants.FILES_DIR), this.getFile(Constants.INDEX_DIR));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public void reindex() throws IOException {
+		indexFiles.index(this.getFile(Constants.FILES_DIR));
 	}
 
 	public ServletContext getServletContext() {
