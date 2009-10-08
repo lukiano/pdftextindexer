@@ -1,29 +1,32 @@
 package org.lucho.client;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class RightPanel extends VerticalPanel {
+import com.smartgwt.client.data.Record;
+import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.widgets.Button;
+import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
+import com.smartgwt.client.widgets.form.fields.TextItem;
+import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
+import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
+import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
+import com.smartgwt.client.widgets.layout.HLayout;
+import com.smartgwt.client.widgets.layout.VLayout;
+
+public class RightPanel extends VLayout {
 
 	// services
 	private SearchRemoteServiceAsync searchService;
 
 	// panel items
-	private TextBox inputBox;
-	private ListBox listResults;
+	private TextItem inputBox;
+	private ListGrid listResults;
 	
 	// panel buttons
 	private Button cleanButton;
@@ -32,38 +35,34 @@ public class RightPanel extends VerticalPanel {
 
 	public RightPanel(final SearchRemoteServiceAsync searchService) {
 		this.searchService = searchService;
-		
 		// panel description label
-		Panel upperRightPanel = rightPanelItems();
-		Panel buttonPanel = rightPanelButtons();
+		Canvas upperRightPanel = rightPanelItems();
+		Canvas buttonPanel = rightPanelButtons();
 
 		//main panel
-		this.add(upperRightPanel);
-		this.add(buttonPanel);
+		this.addChild(upperRightPanel);
+		this.addChild(buttonPanel);
 		this.setSize("400px", "300px");
 		this.setTitle("Search by text");
 	}
 
-	private Panel rightPanelButtons() {
+	private Canvas rightPanelButtons() {
 		// clear results button
 		cleanButton = new Button("Clear results");
-//		cleanButton.setWidth("50%");
 		cleanButton.addClickHandler(new ClickHandler() {
-
+			
 			public void onClick(ClickEvent event) {
 				listResults.clear();
-				inputBox.setText("");
+				inputBox.setValue("");
 			}
 		});
 
 		// download button
 		downloadButton = new Button("Download file");
-//		downloadButton.setWidth("50%");
 		downloadButton.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				String path = listResults.getValue(listResults
-						.getSelectedIndex());
+				String path = listResults.getSelectedRecord().getSingleCellValue();
 				Window
 						.open(path, "_blank",
 								"menubar=no,location=yes,resizable=no,scrollbars=no,status=no");
@@ -72,48 +71,49 @@ public class RightPanel extends VerticalPanel {
 
 		// reindex button
 		reindexButton = new Button("Rebuild index");
-//		reindexButton.setWidth("50%");
 		reindexButton.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
 				AsyncCallback<Void> callback = new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
-						inputBox.setEnabled(true);
+						inputBox.enable();
 					}
 
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to rebuild index");
-						inputBox.setEnabled(true);
+						inputBox.enable();
 					}
 				};
-				inputBox.setEnabled(false);
+				inputBox.disable();
 				searchService.reindex(callback);
 			}
 		});
 
 		// first button dock panel
-		HorizontalPanel buttonPanel = new HorizontalPanel();
-		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		HLayout buttonPanel = new HLayout();
+//		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		buttonPanel.setWidth("100%");
-		buttonPanel.add(downloadButton);
-		buttonPanel.add(cleanButton);
-		buttonPanel.add(reindexButton);
+		buttonPanel.addChild(downloadButton);
+		buttonPanel.addChild(cleanButton);
+		buttonPanel.addChild(reindexButton);
 		return buttonPanel;
 	}
 
-	private Panel rightPanelItems() {
+	private Canvas rightPanelItems() {
 		Label label = new Label("Text search");
 		label.setWidth("100%");
-		label.setHorizontalAlignment(Label.ALIGN_CENTER);
+		label.setAlign(Alignment.CENTER);
 
 		// input search text box
-		inputBox = new TextBox();
-		inputBox.setText("Type something here...");
+		
+		inputBox = new TextItem();
+		inputBox.setValue("Type something here...");
 		inputBox.setWidth("100%");
 		inputBox.addKeyPressHandler(new KeyPressHandler() {
 			
 			public void onKeyPress(KeyPressEvent event) {
-				if (event.getCharCode() == KeyCodes.KEY_ENTER) {
+				Integer code = event.getCharacterValue(); 
+				if (code != null && code.intValue() == KeyCodes.KEY_ENTER) {
 					searchByText();
 				}
 			}
@@ -121,15 +121,15 @@ public class RightPanel extends VerticalPanel {
 		});
 
 		// results list box
-		listResults = new ListBox();
-		listResults.setVisibleItemCount(10);
+		listResults = new ListGrid();
+//		listResults.setsetVisibleItemCount(10);
 		listResults.setWidth("100%");
 		
-		VerticalPanel upperRightPanel = new VerticalPanel();
+		VLayout upperRightPanel = new VLayout();
 		upperRightPanel.setWidth("100%");
-		upperRightPanel.add(label);
-		upperRightPanel.add(inputBox);
-		upperRightPanel.add(listResults);
+		upperRightPanel.addChild(label);
+//		upperRightPanel.addChild(inputBox);
+		upperRightPanel.addChild(listResults);
 		return upperRightPanel;
 	}
 
@@ -150,14 +150,16 @@ public class RightPanel extends VerticalPanel {
 				// desired type and display it
 				listResults.clear();
 				for (Node node : results) {
-					listResults.addItem(node.getText(), node.getPath());
+					ListGridRecord record = new ListGridRecord();
+					record.setSingleCellValue(node.getText());
+					listResults.addData(record);
 				}
 				if (results.length == 0) {
 					Window.alert("No matches found!");
 				}
 			}
 		};
-		searchService.searchByText(inputBox.getText(), callback);
+		searchService.searchByText(inputBox.getValue().toString(), callback);
 	}
 
 }

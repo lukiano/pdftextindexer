@@ -3,7 +3,8 @@
 <module rename-to='main'>
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
-  <inherits name="com.google.gwt.user.theme.standard.Standard"/>
+  <!-- <inherits name="com.google.gwt.user.theme.standard.Standard"/>  -->
+  <inherits name="com.smartgwt.SmartGwt"/>
   
   <entry-point class='org.lucho.client.Main'/>
   <servlet path="/uploadHandler" class="org.lucho.server.upload.UploadServlet" />

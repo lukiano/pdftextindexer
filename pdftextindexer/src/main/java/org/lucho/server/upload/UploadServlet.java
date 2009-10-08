@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.lucho.client.Constants;
+import org.lucho.server.lucene.IndexFiles;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -29,6 +30,9 @@ public class UploadServlet extends HttpServlet {
 	@Inject
 	private FileItemFactory fileItemFactory;
 
+	@Inject
+	private IndexFiles indexFiles;
+	
 	/**
 	 * 
 	 */
@@ -61,6 +65,7 @@ public class UploadServlet extends HttpServlet {
 			resp.getWriter().write("An exception occured. Message is: " + e.getMessage());
 			return;
 		}
+		indexFiles.index(targetFile);
 		resp.getWriter().write("File successfully uploaded");
 	}
 

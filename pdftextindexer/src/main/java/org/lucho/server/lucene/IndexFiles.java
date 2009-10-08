@@ -5,6 +5,6 @@ import java.io.IOException;
 
 public interface IndexFiles {
 
-	void index(final File docsDir, final File indexDir) throws IOException;
+	void index(final File docsDir) throws IOException;
 	
 }
