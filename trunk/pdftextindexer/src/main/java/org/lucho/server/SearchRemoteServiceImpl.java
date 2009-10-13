@@ -61,12 +61,9 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	private void addFile(Node node, File file) {
 		File[] children = file.listFiles(searchFilter);
 		if (children != null) {
-			int length = children.length;
-			node.setChildren(new Node[length]);
-			for (int i = 0; i < length; i++) {
-				File child = children[i];
+			for (File child : children) {
 				Node newNode = fileToNode(child);
-				node.getChildren()[i] = newNode;
+				node.add(newNode);
 				if (child.isDirectory()) {
 					addFile(newNode, child);
 				}

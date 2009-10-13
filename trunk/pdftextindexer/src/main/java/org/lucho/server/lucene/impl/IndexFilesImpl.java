@@ -46,13 +46,18 @@ public class IndexFilesImpl implements IndexFiles {
 	private void indexFile(final IndexWriter writer, final File file)
 			throws IOException {
 		ParsingReader parsingReader = new ParsingReader(file);
+		Document document = new Document();
+		document.add(new Field(Constants.CONTENTS_FIELD, parsingReader, TermVector.WITH_POSITIONS_OFFSETS));
 		try {
-			Document document = new Document();
-			document.add(new Field(Constants.CONTENTS_FIELD, parsingReader, TermVector.WITH_POSITIONS_OFFSETS));
 			writer.addDocument(document);
+		} catch (IOException e) {
+			writer.rollback();
+			//FIXME do now rethrow exception for now
+			return;
 		} finally {
 			parsingReader.close();
 		}
+		writer.commit();
 	}
 
 	private void indexFolder(final IndexWriter writer, final File file)

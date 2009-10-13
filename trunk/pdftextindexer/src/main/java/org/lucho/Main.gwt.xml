@@ -4,7 +4,8 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
   <!-- <inherits name="com.google.gwt.user.theme.standard.Standard"/>  -->
-  <inherits name="com.smartgwt.SmartGwt"/>
+  <inherits name='com.extjs.gxt.ui.GXT' />
+  <inherits name='com.extjs.gxt.charts.Chart' />
   
   <entry-point class='org.lucho.client.Main'/>
   <servlet path="/uploadHandler" class="org.lucho.server.upload.UploadServlet" />
