@@ -17,16 +17,14 @@ import com.google.inject.Inject;
 
 public class LuceneFactoryImpl implements LuceneFactory {
 
-	private IndexWriter indexWriter;
+	private final IndexWriter indexWriter;
 	
-	private IndexReader indexReader;
+	private final IndexReader indexReader;
 	
-	private IndexSearcher indexSearcher;
+	private final IndexSearcher indexSearcher;
 
 	@Inject
-	private AnalyzerFactory analyzerFactory;
-
-	public LuceneFactoryImpl() throws IOException {
+	public LuceneFactoryImpl(final AnalyzerFactory analyzerFactory) throws IOException {
 		Directory directory = new NIOFSDirectory(new File(
 				Constants.INDEX_DIR));
 		indexWriter = new IndexWriter(directory, analyzerFactory

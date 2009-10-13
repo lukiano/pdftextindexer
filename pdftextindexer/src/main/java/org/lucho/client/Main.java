@@ -1,12 +1,10 @@
 package org.lucho.client;
 
-
+import com.extjs.gxt.ui.client.widget.Window;
+import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import com.google.gwt.user.client.ui.DecoratorPanel;
-import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.RootPanel;
 
 public class Main implements EntryPoint {
 
@@ -15,22 +13,20 @@ public class Main implements EntryPoint {
 		SearchRemoteServiceAsync searchService = (SearchRemoteServiceAsync) GWT
 				.create(SearchRemoteService.class);
 		((ServiceDefTarget) searchService).setServiceEntryPoint(GWT
-				.getModuleBaseURL() + "/searchRemoteService");
-
-		// add nice borders
-		DecoratorPanel leftDecoratorPanel = new DecoratorPanel();
-		leftDecoratorPanel.setWidget(new LeftPanel(searchService));
-		DecoratorPanel rightDecoratorPanel = new DecoratorPanel();
-		rightDecoratorPanel.setWidget(new RightPanel(searchService));
+				.getModuleBaseURL()
+				+ "/searchRemoteService");
 
 		// main panel
-		DockPanel mainPanel = new DockPanel();
-		mainPanel.setTitle("Text Indexer");
-		mainPanel.add(leftDecoratorPanel, DockPanel.WEST);
-		mainPanel.add(rightDecoratorPanel, DockPanel.EAST);
-		mainPanel.setSize("600px", "400px");
-		RootPanel.get().add(mainPanel);
+		Window w = new Window();
+		w.setHeading(Constants.TITLE);
+		w.setModal(true);
+		w.setSize(800, 600);
+		w.setLayout(new HBoxLayout());
+//		w.setMaximizable(true);
+		w.setToolTip("The ExtGWT product page...");
+		w.add(new IndexerSearchPanel(searchService));
+		w.add(new IndexerTreePanel(searchService));
+		w.show();
 	}
-
 
 }
