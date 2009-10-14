@@ -54,7 +54,7 @@ public class UploadServlet extends HttpServlet {
 		String realFolder = this.getServletContext().getRealPath(items[1].getString());
 		String targetName = stripPath(items[0].getName());
 		File targetFile = new File(realFolder, targetName); 
-		if (targetFile.exists()) {
+		if (targetFile.exists() || !targetFile.createNewFile()) {
 			resp.getWriter().write("Sorry, a file with that name already exists in the selected folder");
 			return;
 		}

@@ -1,8 +1,6 @@
 package org.lucho.client;
 
-import com.extjs.gxt.charts.client.model.Text;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -12,37 +10,40 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.HorizontalPanel;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.ListView;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.VerticalPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.ListField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class IndexerSearchPanel extends VerticalPanel {
+public class IndexerSearchPanel extends LayoutContainer {
+	
+	private final int width;
+	private final int height;
 
 	// services
 	private SearchRemoteServiceAsync searchService;
 	
 	// panel items
 	private TextField<String> inputBox;
-	private ListView<Text> listResults;
+	private ListView<Node> listResults;
 
 	// panel buttons
 	private Button cleanButton;
 	private Button reindexButton;
 
-	public IndexerSearchPanel(final SearchRemoteServiceAsync searchService) {
+	public IndexerSearchPanel(final SearchRemoteServiceAsync searchService, final int width, final int height) {
 		this.searchService = searchService;
-		this.setTableHeight("100%");
-		this.setTableWidth("100%");
-		this.setSize(400, 600);
+		this.width = width;
+		this.height = height;
+		this.setBorders(false);
+		this.setLayout(new VBoxLayout());
 		this.add(searchPanelItems());
+		this.setSize(width, height);
 	}
 
 	private void searchPanelButtons(final ContentPanel contentPanel) {
@@ -102,30 +103,31 @@ public class IndexerSearchPanel extends VerticalPanel {
 		});
 
 		// results list box
-		listResults = new ListView<Text>();
-		ListStore<Text> store = new ListStore<Text>();
+		listResults = new ListView<Node>();
+		ListStore<Node> store = new ListStore<Node>();
 		listResults.setStore(store);
+		listResults.setDisplayProperty("text");
 		listResults.setWidth("100%");
-		listResults.setHeight(400);
+		listResults.setHeight("100%");
 		listResults.addListener(Events.DoubleClick,
-				new Listener<ListViewEvent<Text> >() {
-					public void handleEvent(ListViewEvent<Text> lve) {
-						Text path = lve.getModel();
-						if (path == null) {
+				new Listener<ListViewEvent<Node> >() {
+					public void handleEvent(ListViewEvent<Node> lve) {
+						Node node = lve.getModel();
+						if (node == null) {
 							MessageBox.alert(Constants.TITLE, "Please select a document from the results list.", null);
 						} else {
-							Window.open(path.getText(), "_blank",
+							Window.open(node.getPath(), "_blank",
 											"menubar=no,location=yes,resizable=no,scrollbars=no,status=no");
 						}
 					}
 				});
 
 		ContentPanel panel = new ContentPanel();
-		panel.setWidth(400-10);
-		panel.setHeight("100%");
 		panel.setHeading("Search documents");
 		panel.add(inputBox);
 		panel.add(listResults);
+		panel.setWidth("100%");
+		panel.setHeight(height - 120);
 		searchPanelButtons(panel);
 		return panel;
 	}
@@ -138,8 +140,7 @@ public class IndexerSearchPanel extends VerticalPanel {
 			public void onFailure(Throwable caught) {
 				waitBox.close();
 				// Show a message informing the user why the call failed
-				MessageBox box = MessageBox.alert(Constants.TITLE, "Unable to perform search. Failure message is "
-						+ caught.getMessage(), null);
+				MessageBox box = MessageBox.alert(Constants.TITLE, "Unable to perform search.", null);
 				box.setIcon(MessageBox.ERROR);
 				box.show();
 			}
@@ -151,8 +152,7 @@ public class IndexerSearchPanel extends VerticalPanel {
 				// desired type and display it
 				listResults.getStore().removeAll();
 				for (Node node : results) {
-					Text data = new Text(node.getText());
-					listResults.getStore().add(data);
+					listResults.getStore().add(node);
 				}
 				if (results.length == 0) {
 					MessageBox.info(Constants.TITLE, "No matches found!", null);

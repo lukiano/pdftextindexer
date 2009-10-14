@@ -19,8 +19,11 @@ public class Main implements EntryPoint {
 		// main panel
 		Window w = new Window();
 		setParameters(w);
-		w.add(new IndexerTreePanel(searchService));
-		w.add(new IndexerSearchPanel(searchService));
+		int width = 800;
+		int height = 600;
+		w.add(new IndexerTreePanel(searchService, width/2, height));
+		w.add(new IndexerSearchPanel(searchService, width/2, height));
+		w.setSize(width, height);
 		w.show();
 	}
 
@@ -28,7 +31,6 @@ public class Main implements EntryPoint {
 		window.setHeading(Constants.TITLE);
 		window.setModal(false);
 		window.setClosable(false);
-		window.setSize(800, 600);
 		window.setLayout(new HBoxLayout());
 		window.setMaximizable(false);
 		window.setMinimizable(false);

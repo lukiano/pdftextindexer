@@ -3,6 +3,7 @@ package org.lucho.server;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -36,12 +37,16 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	 */
 	private static final long serialVersionUID = 1420839684628425128L;
 
-	public Node[] searchByText(String text) throws IOException {
-		File[] results = searchFiles.search(text);
-		Node[] nodes = new Node[results.length];
+	public Node[] searchByText(String text) {
+		List<File> results;
+		try {
+			results = searchFiles.search(text);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		Node[] nodes = new Node[results.size()];
 		for (int i = 0; i < nodes.length; i++) {
-			File file = results[i];
-			nodes[i] = fileToNode(file);
+			nodes[i] = fileToNode(results.get(i));
 		}
 		return nodes;
 	}
@@ -81,9 +86,13 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 		return newNode;
 	}
 
-	public void reindex() throws IOException {
-		indexFiles.clearIndex();
-		indexFiles.index(this.getFile(Constants.FILES_DIR));
+	public void reindex() {
+		try {
+			indexFiles.clearIndex();
+			indexFiles.index(this.getFile(Constants.FILES_DIR));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public ServletContext getServletContext() {

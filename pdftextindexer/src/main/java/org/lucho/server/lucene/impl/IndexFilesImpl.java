@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.tika.parser.ParsingReader;
 import org.lucho.client.Constants;
 import org.lucho.server.lucene.IndexFiles;
@@ -20,6 +22,8 @@ import com.google.inject.Inject;
 /** Index all text files under a directory. */
 public class IndexFilesImpl implements IndexFiles {
 	
+	private static final Logger log = Logger.getLogger(IndexFiles.class);
+	
 	@Inject
 	private FileFilter fileFilter;
 
@@ -28,15 +32,23 @@ public class IndexFilesImpl implements IndexFiles {
 
 	public void clearIndex() throws IOException {
 		IndexWriter writer = luceneFactory.getWriter();
-		writer.deleteAll();
-		writer.commit();
+		try {
+			writer.deleteAll();
+			writer.commit();
+		} catch (AlreadyClosedException ace) {
+			luceneFactory.open();
+		}
 	}
 
 	public void index(final File docsDir) throws IOException {
 		IndexWriter writer = luceneFactory.getWriter();
-		indexDocs(writer, docsDir);
-		writer.optimize();
-		writer.commit();
+		try {
+			indexDocs(writer, docsDir);
+			writer.optimize();
+			writer.commit();
+		} catch (AlreadyClosedException ace) {
+			luceneFactory.open();
+		}
 	}
 
 	private void indexDocs(final IndexWriter writer, final File file) throws IOException {
@@ -59,9 +71,7 @@ public class IndexFilesImpl implements IndexFiles {
 		try {
 			writer.addDocument(document);
 		} catch (IOException e) {
-			writer.rollback();
-			//FIXME do now rethrow exception for now
-			return;
+			log.warn("Unable to index file " + file.getPath(), e);
 		} finally {
 			parsingReader.close();
 		}
