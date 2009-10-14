@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.tika.parser.ParsingReader;
@@ -24,6 +26,11 @@ public class IndexFilesImpl implements IndexFiles {
 	@Inject
 	private LuceneFactory luceneFactory;
 
+	public void clearIndex() throws IOException {
+		IndexWriter writer = luceneFactory.getWriter();
+		writer.deleteAll();
+		writer.commit();
+	}
 
 	public void index(final File docsDir) throws IOException {
 		IndexWriter writer = luceneFactory.getWriter();
@@ -47,6 +54,7 @@ public class IndexFilesImpl implements IndexFiles {
 			throws IOException {
 		ParsingReader parsingReader = new ParsingReader(file);
 		Document document = new Document();
+		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES, Index.NO));
 		document.add(new Field(Constants.CONTENTS_FIELD, parsingReader, TermVector.WITH_POSITIONS_OFFSETS));
 		try {
 			writer.addDocument(document);

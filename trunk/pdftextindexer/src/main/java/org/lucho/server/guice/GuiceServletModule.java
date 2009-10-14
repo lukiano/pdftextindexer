@@ -26,6 +26,8 @@ public class GuiceServletModule extends ServletModule {
     protected void configureServlets() {
         serve("/searchRemoteService").with(GuiceRemoteServiceServlet.class);
         serve("/uploadHandler").with(UploadServlet.class);
+        serve("/main/searchRemoteService").with(GuiceRemoteServiceServlet.class);
+        serve("/main/uploadHandler").with(UploadServlet.class);
 
         bind(SearchRemoteService.class).to(SearchRemoteServiceImpl.class);
         bind(IndexFiles.class).to(IndexFilesImpl.class).in(Scopes.SINGLETON);

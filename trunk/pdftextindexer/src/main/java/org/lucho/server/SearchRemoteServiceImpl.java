@@ -82,6 +82,7 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	}
 
 	public void reindex() throws IOException {
+		indexFiles.clearIndex();
 		indexFiles.index(this.getFile(Constants.FILES_DIR));
 	}
 
