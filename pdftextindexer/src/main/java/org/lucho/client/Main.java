@@ -18,15 +18,21 @@ public class Main implements EntryPoint {
 
 		// main panel
 		Window w = new Window();
-		w.setHeading(Constants.TITLE);
-		w.setModal(true);
-		w.setSize(800, 600);
-		w.setLayout(new HBoxLayout());
-//		w.setMaximizable(true);
-		w.setToolTip("The ExtGWT product page...");
-		w.add(new IndexerSearchPanel(searchService));
+		setParameters(w);
 		w.add(new IndexerTreePanel(searchService));
+		w.add(new IndexerSearchPanel(searchService));
 		w.show();
+	}
+
+	private void setParameters(final Window window) {
+		window.setHeading(Constants.TITLE);
+		window.setModal(false);
+		window.setClosable(false);
+		window.setSize(800, 600);
+		window.setLayout(new HBoxLayout());
+		window.setMaximizable(false);
+		window.setMinimizable(false);
+		window.setResizable(false);
 	}
 
 }

@@ -7,4 +7,6 @@ public interface IndexFiles {
 
 	void index(final File docsDir) throws IOException;
 	
+	void clearIndex() throws IOException;
+	
 }
