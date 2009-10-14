@@ -1,7 +1,5 @@
 package org.lucho.server.guice;
 
-import java.io.IOException;
-
 import org.lucho.server.lucene.LuceneFactory;
 
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
@@ -49,12 +47,7 @@ public class GuiceRemoteServiceServlet extends RemoteServiceServlet {
 	}
 	
 	public void destroy() {
-		try {
-			luceneFactory.getWriter().close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		luceneFactory.close();
 		super.destroy();
 	}
 }
