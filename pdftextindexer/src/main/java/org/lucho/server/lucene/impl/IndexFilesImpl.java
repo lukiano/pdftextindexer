@@ -72,6 +72,7 @@ public class IndexFilesImpl implements IndexFiles {
 
 	private void indexFileWithoutStoring(final IndexWriter writer, final File file)
 			throws IOException {
+		log.info("Indexing file " + file.getPath());
 		Document document = new Document();
 		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES,
 				Index.NO));
@@ -90,6 +91,7 @@ public class IndexFilesImpl implements IndexFiles {
 
 	private void indexFileWithStoring(final IndexWriter writer, final File file)
 			throws IOException {
+		log.info("Indexing file " + file.getPath());
 		Document document = new Document();
 		StringWriter stringWriter = new StringWriter();
 		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES,
