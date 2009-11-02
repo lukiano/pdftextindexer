@@ -3,8 +3,9 @@ package org.lucho.server.lucene.impl;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
@@ -17,9 +18,9 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParsingReader;
 import org.apache.tika.sax.BodyContentHandler;
 import org.lucho.client.Constants;
+import org.lucho.server.ExtensionFilter;
 import org.lucho.server.lucene.IndexFiles;
 import org.lucho.server.lucene.LuceneFactory;
 import org.xml.sax.SAXException;
@@ -56,6 +57,7 @@ public class IndexFilesImpl implements IndexFiles {
 		} catch (AlreadyClosedException ace) {
 			luceneFactory.open();
 		}
+		luceneFactory.updateSpellIndex();
 	}
 
 	private void indexDocs(final IndexWriter writer, final File file)
@@ -70,54 +72,62 @@ public class IndexFilesImpl implements IndexFiles {
 		}
 	}
 
-	private void indexFileWithoutStoring(final IndexWriter writer, final File file)
+//	private void indexFileWithoutStoring(final IndexWriter writer, final File file)
+//			throws IOException {
+//		log.info("Indexing file " + file.getPath());
+//		Document document = new Document();
+//		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES,
+//				Index.NO));
+//		ParsingReader parsingReader = new ParsingReader(file);
+//		document.add(new Field(Constants.CONTENTS_FIELD, parsingReader,
+//				TermVector.WITH_POSITIONS_OFFSETS));
+//		try {
+//			writer.addDocument(document);
+//		} catch (IOException e) {
+//			log.warn("Unable to index file " + file.getPath(), e);
+//		} finally {
+//			parsingReader.close();
+//		}
+//		writer.commit();
+//	}
+
+	private void indexFileWithStoring(final IndexWriter writer, final File file)
 			throws IOException {
 		log.info("Indexing file " + file.getPath());
+		File metadataFile = new File(file.getParentFile(), file.getName() + ExtensionFilter.EXTENSION);
+		if (!metadataFile.exists()) {
+			FileWriter fileWriter = new FileWriter(metadataFile);
+			AutoDetectParser parser = new AutoDetectParser();
+			BodyContentHandler contentHandler = new BodyContentHandler(fileWriter);
+			Metadata metadata = new Metadata();
+			FileInputStream fileInputStream = new FileInputStream(file);
+			try {
+				parser.parse(fileInputStream, contentHandler, metadata);
+			} catch (SAXException e) {
+				log.warn("Unable to index file " + file.getPath(), e);
+				return;
+			} catch (TikaException e) {
+				log.warn("Unable to index file " + file.getPath(), e);
+				return;
+			} finally {
+				fileInputStream.close();
+				fileWriter.close();
+			}
+		}
 		Document document = new Document();
 		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES,
 				Index.NO));
-		ParsingReader parsingReader = new ParsingReader(file);
-		document.add(new Field(Constants.CONTENTS_FIELD, parsingReader,
+		document.add(new Field(Constants.METADATA_PATH_FIELD, metadataFile.getPath(), Store.YES,
+				Index.NO));
+		FileReader fileReader = new FileReader(metadataFile);
+		document.add(new Field(Constants.CONTENTS_FIELD, fileReader,
 				TermVector.WITH_POSITIONS_OFFSETS));
 		try {
 			writer.addDocument(document);
 		} catch (IOException e) {
 			log.warn("Unable to index file " + file.getPath(), e);
 		} finally {
-			parsingReader.close();
-		}
-		writer.commit();
-	}
-
-	private void indexFileWithStoring(final IndexWriter writer, final File file)
-			throws IOException {
-		log.info("Indexing file " + file.getPath());
-		Document document = new Document();
-		StringWriter stringWriter = new StringWriter();
-		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES,
-				Index.NO));
-		AutoDetectParser parser = new AutoDetectParser();
-		BodyContentHandler contentHandler = new BodyContentHandler(stringWriter);
-		Metadata metadata = new Metadata();
-		FileInputStream fileInputStream = new FileInputStream(file);
-		try {
-			parser.parse(fileInputStream, contentHandler, metadata);
-			document.add(new Field(Constants.CONTENTS_FIELD, stringWriter.toString(),
-					Store.YES, Index.ANALYZED, TermVector.WITH_POSITIONS_OFFSETS));
-		} catch (SAXException e) {
-			log.warn("Unable to index file " + file.getPath(), e);
-			return;
-		} catch (TikaException e) {
-			log.warn("Unable to index file " + file.getPath(), e);
-			return;
-		} finally {
-			fileInputStream.close();
-		}
-		try {
-			writer.addDocument(document);
-		} catch (IOException e) {
-			log.warn("Unable to index file " + file.getPath(), e);
-			return;
+			fileReader.close();
 		}
 		writer.commit();
 	}

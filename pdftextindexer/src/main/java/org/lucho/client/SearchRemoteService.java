@@ -10,4 +10,8 @@ public interface SearchRemoteService extends RemoteService {
 	
 	public void reindex();
 	
+	public String highlight(Node node, String queryString);
+	
+	public String suggest(String queryString);
+	
 }

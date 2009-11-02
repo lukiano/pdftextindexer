@@ -10,4 +10,8 @@ public interface SearchRemoteServiceAsync {
 
 	void reindex(AsyncCallback<Void> callback);
 
+	void highlight(Node node, String queryString, AsyncCallback<String> callback);
+
+	void suggest(String queryString, AsyncCallback<String> callback);
+
 }

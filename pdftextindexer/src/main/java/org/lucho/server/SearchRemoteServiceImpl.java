@@ -98,6 +98,21 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	public ServletContext getServletContext() {
 		return servletContext;
 	}
+	
+	public String highlight(Node node, String queryString) {
+		try {
+			return searchFiles.highlight(queryString, this.getFile(node.getPath() + ExtensionFilter.EXTENSION));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
+	public String suggest(String queryString) {
+		try {
+			return searchFiles.suggest(queryString);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 }
