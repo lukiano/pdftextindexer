@@ -16,9 +16,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
+import org.apache.lucene.util.Version;
 import org.lucho.client.Constants;
 import org.lucho.server.lucene.AnalyzerFactory;
 import org.lucho.server.lucene.LuceneFactory;
@@ -40,7 +39,7 @@ public class SearchFilesImpl implements SearchFiles {
 		IndexSearcher searcher = luceneFactory.getSearcher();
 		try {
 			Analyzer analyzer = analyzerFactory.getAnalyzer();
-			QueryParser parser = new QueryParser(Constants.CONTENTS_FIELD, analyzer);
+			QueryParser parser = new QueryParser(Version.LUCENE_CURRENT, Constants.CONTENTS_FIELD, analyzer);
 			Query query = parser.parse(text);
 			return doSearch(searcher, query);
 		} catch (ParseException e) {
@@ -67,15 +66,15 @@ public class SearchFilesImpl implements SearchFiles {
 
 	public String highlight(String queryString, File file) throws IOException {
 		Analyzer analyzer = analyzerFactory.getAnalyzer();
-		QueryParser parser = new QueryParser(Constants.CONTENTS_FIELD, analyzer);
+		QueryParser parser = new QueryParser(Version.LUCENE_CURRENT, Constants.CONTENTS_FIELD, analyzer);
 		Query query;
 		try {
 			query = parser.parse(queryString);
 		} catch (ParseException e1) {
 			return "";
 		}
-		QueryScorer queryScorer = new QueryScorer(query);
-		Highlighter highlighter = new Highlighter(queryScorer);
+		FastVectorHighlighter highlighter = new FastVectorHighlighter();
+		highlighter.getBestFragment(fieldQuery, reader, docId, fieldName, fragCharSize)
 		FileReader fileReader = new FileReader(file);
 		try {
 			TokenStream tokenStream = analyzer.tokenStream(Constants.CONTENTS_FIELD, fileReader);
@@ -94,5 +93,5 @@ public class SearchFilesImpl implements SearchFiles {
 		}
 		return suggestions[0];
 	}
-	
+
 }
