@@ -16,7 +16,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
+import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.util.Version;
 import org.lucho.client.Constants;
 import org.lucho.server.lucene.AnalyzerFactory;
@@ -73,10 +75,13 @@ public class SearchFilesImpl implements SearchFiles {
 		} catch (ParseException e1) {
 			return "";
 		}
-		FastVectorHighlighter highlighter = new FastVectorHighlighter();
-		highlighter.getBestFragment(fieldQuery, reader, docId, fieldName, fragCharSize)
+//		FastVectorHighlighter highlighter = new FastVectorHighlighter();
+//		FieldQuery fieldQuery = highlighter.getFieldQuery(query);
+//		return highlighter.getBestFragment(fieldQuery, luceneFactory.getSearcher().getIndexReader(), docId, Constants.CONTENTS_FIELD, 128);
+		
 		FileReader fileReader = new FileReader(file);
 		try {
+			Highlighter highlighter = new Highlighter(new QueryScorer(query, luceneFactory.getSearcher().getIndexReader(), Constants.CONTENTS_FIELD));
 			TokenStream tokenStream = analyzer.tokenStream(Constants.CONTENTS_FIELD, fileReader);
 			return highlighter.getBestFragment(tokenStream, "");
 		} catch (InvalidTokenOffsetsException e) {
