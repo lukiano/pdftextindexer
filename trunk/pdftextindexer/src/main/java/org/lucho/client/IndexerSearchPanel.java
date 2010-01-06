@@ -208,7 +208,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 	
 	private void updateHistory() {
 		ListStore<Text> store = inputBox.getStore();
-		int count = Math.min(10, store.getCount());
+		int count = Math.max(10, store.getCount());
 		StringBuilder stringBuilder = new StringBuilder();
 		if (count > 0) {
 			for (int i = 0; (i < count - 1); i++) {
