@@ -8,7 +8,6 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 
-import org.lucho.client.Constants;
 import org.lucho.client.Node;
 import org.lucho.client.SearchRemoteService;
 import org.lucho.server.lucene.IndexFiles;
@@ -18,8 +17,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.inject.Inject;
 
 @RemoteServiceRelativePath("searchRemoteService")
-public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemoteService {
-	
+public class SearchRemoteServiceImpl extends HttpServlet implements
+		SearchRemoteService {
+
 	@Inject
 	private ServletContext servletContext;
 
@@ -52,17 +52,17 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	}
 
 	public Node listFiles() {
-		File rootFile = this.getFile(Constants.FILES_DIR);
+		File rootFile = new File(ServerConstants.FILES_DIR);
 		Node rootNode = Node.create("root");
 		rootNode.hasChildren(true);
 		addFile(rootNode, rootFile);
 		return rootNode;
 	}
-	
+
 	private File getFile(String path) {
 		return new File(this.getServletContext().getRealPath(path));
 	}
-	
+
 	private void addFile(Node node, File file) {
 		File[] children = file.listFiles(searchFilter);
 		if (children != null) {
@@ -89,7 +89,7 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	public void reindex() {
 		try {
 			indexFiles.clearIndex();
-			indexFiles.index(this.getFile(Constants.FILES_DIR));
+			indexFiles.index(new File(ServerConstants.FILES_DIR));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -98,10 +98,12 @@ public class SearchRemoteServiceImpl extends HttpServlet implements SearchRemote
 	public ServletContext getServletContext() {
 		return servletContext;
 	}
-	
+
 	public String highlight(Node node, String queryString) {
 		try {
-			return searchFiles.highlight(queryString, this.getFile(node.getPath() + ExtensionFilter.EXTENSION));
+			return searchFiles.highlight(queryString, this.getFile(node
+					.getPath()
+					+ ExtensionFilter.EXTENSION));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

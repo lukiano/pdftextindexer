@@ -19,8 +19,8 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.BodyContentHandler;
-import org.lucho.client.Constants;
 import org.lucho.server.ExtensionFilter;
+import org.lucho.server.ServerConstants;
 import org.lucho.server.lucene.IndexFiles;
 import org.lucho.server.lucene.LuceneFactory;
 import org.xml.sax.SAXException;
@@ -115,12 +115,12 @@ public class IndexFilesImpl implements IndexFiles {
 			}
 		}
 		Document document = new Document();
-		document.add(new Field(Constants.PATH_FIELD, file.getPath(), Store.YES,
+		document.add(new Field(ServerConstants.PATH_FIELD, file.getPath(), Store.YES,
 				Index.NO));
-		document.add(new Field(Constants.METADATA_PATH_FIELD, metadataFile.getPath(), Store.YES,
+		document.add(new Field(ServerConstants.METADATA_PATH_FIELD, metadataFile.getPath(), Store.YES,
 				Index.NO));
 		FileReader fileReader = new FileReader(metadataFile);
-		document.add(new Field(Constants.CONTENTS_FIELD, fileReader,
+		document.add(new Field(ServerConstants.CONTENTS_FIELD, fileReader,
 				TermVector.WITH_POSITIONS_OFFSETS));
 		try {
 			writer.addDocument(document);
