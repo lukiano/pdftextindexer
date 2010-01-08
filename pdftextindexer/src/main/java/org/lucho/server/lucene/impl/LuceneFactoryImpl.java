@@ -13,24 +13,24 @@ import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.lucho.client.Constants;
+import org.lucho.server.ServerConstants;
 import org.lucho.server.lucene.AnalyzerFactory;
 import org.lucho.server.lucene.LuceneFactory;
 
 import com.google.inject.Inject;
 
 public class LuceneFactoryImpl implements LuceneFactory {
-	
+
 	private static final Logger log = Logger.getLogger(LuceneFactory.class);
 
 	private IndexWriter indexWriter;
-	
+
 	private IndexReader indexReader;
-	
+
 	private IndexSearcher indexSearcher;
-	
+
 	private AnalyzerFactory analyzerFactory;
-	
+
 	private SpellChecker spellChecker;
 
 	@Inject
@@ -49,30 +49,47 @@ public class LuceneFactoryImpl implements LuceneFactory {
 
 	public void open() {
 		try {
-			Directory directory = FSDirectory.open(new File(
-					Constants.INDEX_DIR));
+			Directory directory = FSDirectory.open(getIndexDirectory());
 			indexWriter = new IndexWriter(directory, analyzerFactory
 					.getAnalyzer(), MaxFieldLength.UNLIMITED);
 			indexReader = indexWriter.getReader();
 			indexSearcher = new IndexSearcher(indexReader);
-			
-			Directory suggestDirectory = FSDirectory.open(new File(Constants.SUGGEST_INDEX_DIR));
+
+			Directory suggestDirectory = FSDirectory
+					.open(getSuggestDirectory());
 			this.spellChecker = new SpellChecker(suggestDirectory);
 		} catch (IOException e) {
 			log.error("Unable to open Lucene");
 		}
 	}
-	
+
+	private File getSuggestDirectory() throws IOException {
+		File file = new File(ServerConstants.SUGGEST_INDEX_DIR);
+		if (!file.mkdirs()) {
+			throw new IOException("Cannot make suggest directory");
+		}
+		return file;
+	}
+
+	private File getIndexDirectory() throws IOException {
+		File file = new File(ServerConstants.INDEX_DIR);
+		if (!file.mkdirs()) {
+			throw new IOException("Cannot make index directory");
+		}
+		return file;
+	}
+
 	public void updateSpellIndex() throws IOException {
 		indexReader = indexReader.reopen();
-		Dictionary dictionary = new LuceneDictionary(indexReader, Constants.CONTENTS_FIELD);
+		Dictionary dictionary = new LuceneDictionary(indexReader,
+				ServerConstants.CONTENTS_FIELD);
 		spellChecker.indexDictionary(dictionary);
 	}
-	
+
 	public SpellChecker getSpellChecker() {
 		return spellChecker;
 	}
-	
+
 	public void close() {
 		try {
 			indexSearcher.close();

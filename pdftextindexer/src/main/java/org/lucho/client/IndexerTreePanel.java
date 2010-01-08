@@ -160,7 +160,7 @@ public class IndexerTreePanel extends LayoutContainer {
 			}
 
 			public void onFailure(Throwable caught) {
-				MessageBox box = MessageBox.alert(Constants.TITLE, "Unable to load tree.", null);
+				MessageBox box = MessageBox.alert(Constants.TITLE, "Unable to load tree. (" + caught.getMessage() + ")", null);
 				box.setIcon(MessageBox.ERROR);
 				box.show();
 				uploadButton.setEnabled(true);

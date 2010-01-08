@@ -4,7 +4,6 @@ import java.io.FileFilter;
 
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.lucho.client.SearchRemoteService;
 import org.lucho.server.ExtensionFilter;
 import org.lucho.server.SearchRemoteServiceImpl;
