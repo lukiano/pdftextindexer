@@ -8,9 +8,9 @@ import org.apache.lucene.search.spell.SpellChecker;
 
 public interface LuceneFactory {
 	
-	void open();
+	void open() throws IOException;
 	
-	void close();
+	void close() throws IOException;
 
 	IndexWriter getWriter();
 

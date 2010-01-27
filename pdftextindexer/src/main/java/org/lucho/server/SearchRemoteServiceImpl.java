@@ -1,13 +1,14 @@
 package org.lucho.server;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 
+import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs.FileType;
 import org.lucho.client.Node;
 import org.lucho.client.SearchRemoteService;
 import org.lucho.server.lucene.IndexFiles;
@@ -27,89 +28,85 @@ public class SearchRemoteServiceImpl extends HttpServlet implements
 	private SearchFiles searchFiles;
 
 	@Inject
-	private FileFilter searchFilter;
-
-	@Inject
 	private IndexFiles indexFiles;
-
+	
+	@Inject
+	private FileResolver fileResolver;
+	
 	/**
 	 * Auto generated serial id
 	 */
 	private static final long serialVersionUID = 1420839684628425128L;
 
-	public Node[] searchByText(String text) {
-		List<File> results;
+	public Node[] searchByText(final String text) {
 		try {
-			results = searchFiles.search(text);
+			List<FileObject> results = searchFiles.search(text);
+			Node[] nodes = new Node[results.size()];
+			for (int i = 0; i < nodes.length; i++) {
+				nodes[i] = fileToNode(results.get(i));
+			}
+			return nodes;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		Node[] nodes = new Node[results.size()];
-		for (int i = 0; i < nodes.length; i++) {
-			nodes[i] = fileToNode(results.get(i));
-		}
-		return nodes;
 	}
 
 	public Node listFiles() {
-		File rootFile = new File(ServerConstants.FILES_DIR);
-		Node rootNode = Node.create("root");
-		rootNode.hasChildren(true);
-		addFile(rootNode, rootFile);
-		return rootNode;
+		try {
+			FileObject rootFile = fileResolver.getBaseFolder();
+			Node rootNode = Node.create("root");
+			rootNode.hasChildren(true);
+			addFile(rootNode, rootFile);
+			return rootNode;
+		} catch (FileSystemException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private File getFile(String path) {
-		return new File(this.getServletContext().getRealPath(path));
-	}
-
-	private void addFile(Node node, File file) {
-		File[] children = file.listFiles(searchFilter);
-		if (children != null) {
-			for (File child : children) {
-				Node newNode = fileToNode(child);
-				node.add(newNode);
-				if (child.isDirectory()) {
-					addFile(newNode, child);
-				}
+	private void addFile(final Node node, final FileObject file) throws FileSystemException {
+		FileObject[] children = file.getChildren();
+		for (FileObject child : children) {
+			Node newNode = fileToNode(child);
+			node.add(newNode);
+			if (isFolder(child)) {
+				addFile(newNode, child);
 			}
 		}
 	}
 
-	private Node fileToNode(File child) {
-		Node newNode = Node.create(child.getName());
-		int prefixLength = this.getServletContext().getRealPath(".").length();
-		String relativePath = child.getPath().substring(prefixLength - 1);
-		relativePath = relativePath.replaceAll("\\\\", "/");
-		newNode.setPath(relativePath);
-		newNode.hasChildren(child.isDirectory());
+	private boolean isFolder(FileObject child) throws FileSystemException {
+		return child.getType().equals(FileType.FOLDER);
+	}
+
+	private Node fileToNode(final FileObject child) throws FileSystemException {
+		Node newNode = Node.create(child.getName().getBaseName());
+		newNode.setPath(child.getURL().toString());
+		newNode.hasChildren(isFolder(child));
 		return newNode;
 	}
 
 	public void reindex() {
 		try {
 			indexFiles.clearIndex();
-			indexFiles.index(new File(ServerConstants.FILES_DIR));
+			indexFiles.index(fileResolver.getBaseFolder());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public ServletContext getServletContext() {
 		return servletContext;
 	}
 
-	public String highlight(Node node, String queryString) {
+	public String highlight(final Node node, final String queryString) {
 		try {
-			return searchFiles.highlight(queryString, this.getFile(node
-					.getPath()
-					+ ExtensionFilter.EXTENSION));
+			return searchFiles.highlight(queryString, node.getPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public String suggest(String queryString) {
+	public String suggest(final String queryString) {
 		try {
 			return searchFiles.suggest(queryString);
 		} catch (IOException e) {

@@ -3,7 +3,6 @@ package org.lucho.server.lucene.impl;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
@@ -21,8 +20,6 @@ import com.google.inject.Inject;
 
 public class LuceneFactoryImpl implements LuceneFactory {
 
-	private static final Logger log = Logger.getLogger(LuceneFactory.class);
-
 	private IndexWriter indexWriter;
 
 	private IndexReader indexReader;
@@ -34,7 +31,7 @@ public class LuceneFactoryImpl implements LuceneFactory {
 	private SpellChecker spellChecker;
 
 	@Inject
-	public LuceneFactoryImpl(final AnalyzerFactory analyzerFactory) {
+	public LuceneFactoryImpl(final AnalyzerFactory analyzerFactory) throws IOException {
 		this.analyzerFactory = analyzerFactory;
 		this.open();
 	}
@@ -47,25 +44,21 @@ public class LuceneFactoryImpl implements LuceneFactory {
 		return indexWriter;
 	}
 
-	public void open() {
-		try {
-			Directory directory = FSDirectory.open(getIndexDirectory());
-			indexWriter = new IndexWriter(directory, analyzerFactory
-					.getAnalyzer(), MaxFieldLength.UNLIMITED);
-			indexReader = indexWriter.getReader();
-			indexSearcher = new IndexSearcher(indexReader);
+	public void open() throws IOException {
+		Directory directory = FSDirectory.open(getIndexDirectory());
+		indexWriter = new IndexWriter(directory, analyzerFactory
+				.getAnalyzer(), MaxFieldLength.UNLIMITED);
+		indexReader = indexWriter.getReader();
+		indexSearcher = new IndexSearcher(indexReader);
 
-			Directory suggestDirectory = FSDirectory
-					.open(getSuggestDirectory());
-			this.spellChecker = new SpellChecker(suggestDirectory);
-		} catch (IOException e) {
-			log.error("Unable to open Lucene");
-		}
+		Directory suggestDirectory = FSDirectory
+				.open(getSuggestDirectory());
+		this.spellChecker = new SpellChecker(suggestDirectory);
 	}
 
 	private File getSuggestDirectory() throws IOException {
 		File file = new File(ServerConstants.SUGGEST_INDEX_DIR);
-		if (!file.mkdirs()) {
+		if (!file.exists() && !file.mkdirs()) {
 			throw new IOException("Cannot make suggest directory");
 		}
 		return file;
@@ -73,7 +66,7 @@ public class LuceneFactoryImpl implements LuceneFactory {
 
 	private File getIndexDirectory() throws IOException {
 		File file = new File(ServerConstants.INDEX_DIR);
-		if (!file.mkdirs()) {
+		if (!file.exists() && !file.mkdirs()) {
 			throw new IOException("Cannot make index directory");
 		}
 		return file;
@@ -90,14 +83,10 @@ public class LuceneFactoryImpl implements LuceneFactory {
 		return spellChecker;
 	}
 
-	public void close() {
-		try {
-			indexSearcher.close();
-			indexReader.close();
-			indexWriter.close();
-		} catch (IOException e) {
-			log.error("Error while closing Lucene.", e);
-		}
+	public void close() throws IOException {
+		indexSearcher.close();
+		indexReader.close();
+		indexWriter.close();
 	}
 
 }
