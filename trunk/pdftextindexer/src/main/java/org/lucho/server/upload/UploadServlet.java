@@ -1,7 +1,8 @@
 package org.lucho.server.upload;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,7 +16,10 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.vfs.FileObject;
 import org.lucho.client.Constants;
+import org.lucho.server.FileResolver;
 import org.lucho.server.lucene.IndexFiles;
 
 import com.google.inject.Inject;
@@ -33,6 +37,9 @@ public class UploadServlet extends HttpServlet {
 	@Inject
 	private IndexFiles indexFiles;
 	
+	@Inject
+	private FileResolver fileResolver;
+
 	/**
 	 * 
 	 */
@@ -51,19 +58,23 @@ public class UploadServlet extends HttpServlet {
 			resp.getWriter().write("NO-SCRIPT-DATA");
 			return;
 		}
-		String realFolder = this.getServletContext().getRealPath(items[1].getString());
+		FileObject baseFolder = fileResolver.getFile(items[1].getString());
 		String targetName = stripPath(items[0].getName());
-		File targetFile = new File(realFolder, targetName); 
-		if (targetFile.exists() || !targetFile.createNewFile()) {
+		FileObject targetFile = fileResolver.getFile(baseFolder, targetName); 
+		if (targetFile.exists()) {
 			resp.getWriter().write("Sorry, a file with that name already exists in the selected folder");
 			return;
 		}
+		targetFile.createFile();
+		OutputStream outputStream = null;
+		InputStream inputStream = null;
 		try {
-			items[0].write(targetFile);
-		} catch (Exception e) {
-			e.printStackTrace();
-			resp.getWriter().write("An exception occured. Message is: " + e.getMessage());
-			return;
+			outputStream = targetFile.getContent().getOutputStream();
+			inputStream = items[0].getInputStream();
+			IOUtils.copy(inputStream, outputStream);
+		} finally {
+			if (outputStream != null) outputStream.close();
+			if (inputStream != null) inputStream.close();
 		}
 		indexFiles.index(targetFile);
 		resp.getWriter().write("File successfully uploaded");

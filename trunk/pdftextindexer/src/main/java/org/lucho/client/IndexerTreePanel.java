@@ -2,7 +2,6 @@ package org.lucho.client;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.data.TreeLoader;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
@@ -34,7 +33,6 @@ public class IndexerTreePanel extends LayoutContainer {
 	private SearchRemoteServiceAsync searchService;
 
 	// panel items
-	private TreeLoader<Node> loader;
 	private TreePanel<Node> fileTree;
 	private FormPanel formPanel;
 	private HiddenField<String> directoryHidden;
@@ -109,7 +107,7 @@ public class IndexerTreePanel extends LayoutContainer {
 		directoryHidden.setName(Constants.HIDDEN_FIELD);
 		
 		formPanel.setWidth("100%");
-		formPanel.setHeight("25%");
+		//formPanel.setHeight("25%");
 		
 		// Create a FileUpload widget.
 		final FileUploadField upload = new FileUploadField();
