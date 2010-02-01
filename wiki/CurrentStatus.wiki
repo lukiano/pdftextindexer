@@ -1,0 +1,24 @@
+#summary What's going on with this project.
+#labels Phase-Design,Featured
+
+= Introduction =
+
+Goal of this project:
+I had a bunch of documents (pdf, doc, chm, etc) and I wanted an interface to search them and access the files that matched the query. I found an existing desktop application to do that _TODO find name of that app_. But I wanted it to be a web page.
+
+First I thought of using some CMS, in Java or php, but the ones I found have a tough learning curve (or I was just too lazy). So I also used this as an excuse to learn about GWT. Later I added Guice to do some DI (I always have used Spring in my current and previous jobs).
+
+= Details =
+
+Like two months ago I reached "version 1.0", which loaded the documents (pdf, etc) from inside the servlet. Used gwt 1.7, Lucene 2.9, guice 2.0 (for DI with @Inject annotation and servlet modules extension). Lucene index is also saved inside servlet (so no WAR packaging). 
+
+Now the current goal is:
+  * Use GWT 2.0 and GXT 2.1 (too bad GXT 2.1 is not in maven yet. By the way, this projects uses Maven).
+  * Use Lucene 3.0 with the fast highlighter extension and the suggest word extension
+  * Read the files from FTP. Also have the option to upload new documents to same FTP using basic authentication predefined in some properties file.
+
+I'm using Eclipse IDE with GWT plugin. I'm having some issues with the development mode of GWT 2.0 . I think it is not prepared to be used with Guice Servlet Modules yet.
+
+Also, The project uses Apache Tika to parse the documents and convert them to text. Tika does not support parsing CHM files yet (windows help files).
+
+_TODO add links to gwt, gxt, lucene, tika, etc._
