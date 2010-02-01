@@ -18,6 +18,6 @@ public interface LuceneFactory {
 	
 	void updateSpellIndex() throws IOException;
 	
-	public SpellChecker getSpellChecker();
+	SpellChecker getSpellChecker();
 	
 }
