@@ -14,7 +14,7 @@ public class Main implements EntryPoint {
 				.create(SearchRemoteService.class);
 		((ServiceDefTarget) searchService).setServiceEntryPoint(GWT
 				.getModuleBaseURL()
-				+ "/searchRemoteService");
+				+ "searchRemoteService");
 
 		// main panel
 		Window w = new Window();
