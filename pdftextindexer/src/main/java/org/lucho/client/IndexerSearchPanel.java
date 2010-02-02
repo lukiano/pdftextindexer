@@ -103,7 +103,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 		inputBox.setFieldLabel("Text search");
 		inputBox.addKeyListener(new KeyListener() {
 
-			public void componentKeyPress(ComponentEvent event) {
+			public void componentKeyUp(ComponentEvent event) {
 				int code = event.getKeyCode();
 				if (code == KeyCodes.KEY_ENTER) {
 					updateHistory();
@@ -130,10 +130,12 @@ public class IndexerSearchPanel extends LayoutContainer {
 		listResults.addListener(Events.DoubleClick,
 				new Listener<ListViewEvent<Node> >() {
 					public void handleEvent(ListViewEvent<Node> lve) {
-						Node node = lve.getModel();
-						if (node == null) {
+						Node selectedNode = lve.getModel();
+						if (selectedNode == null) {
 							MessageBox.alert(Constants.TITLE, "Please select a document from the results list.", null);
 						} else {
+							Window.open(selectedNode.getPath(), "_blank",
+							"menubar=no,location=yes,resizable=no,scrollbars=no,status=no");
 						}
 					}
 				});
@@ -190,7 +192,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 				store.commitChanges();
 			}
 		};
-		String textToSearch = inputBox.getValue().getText();
+		String textToSearch = inputBox.getRawValue();
 		
 		searchService.searchByText(textToSearch, callback);
 	}
@@ -201,7 +203,9 @@ public class IndexerSearchPanel extends LayoutContainer {
 		store.removeAll();
 		if (history != null) {
 			for (String line : history.split(HISTORY_SEPARATOR)) {
-				store.add(new Text(line));
+				if (!line.isEmpty()) {
+					store.add(new Text(line));
+				}
 			}
 		}
 	}
@@ -212,15 +216,21 @@ public class IndexerSearchPanel extends LayoutContainer {
 		StringBuilder stringBuilder = new StringBuilder();
 		if (count > 0) {
 			for (int i = 0; (i < count - 1); i++) {
-				String line = store.getAt(i).getText();
-				stringBuilder.append(line);
-				stringBuilder.append(HISTORY_SEPARATOR);
+				Text line = store.getAt(i);
+				if (line != null) {
+					stringBuilder.append(line.getText());
+					stringBuilder.append(HISTORY_SEPARATOR);
+				}
 			}
-			String line = store.getAt(count - 1).getText();
-			stringBuilder.append(line);
+			Text line = store.getAt(count - 1);
+			if (line != null) {
+				stringBuilder.append(line.getText());
+			}
+			
 		}
 		Cookies.setCookie(TEXTINDEXERHISTORY_COOKIE_NAME, stringBuilder.toString());
 	}
+	
 
 	private void suggestATerm() {
 		AsyncCallback<String> callback = new AsyncCallback<String>() {
@@ -232,9 +242,11 @@ public class IndexerSearchPanel extends LayoutContainer {
 			public void onFailure(Throwable ignored) {
 			}
 		};
-		String textToSearch = inputBox.getValue().getText();
+		String textToSearch = inputBox.getRawValue();
 		if (textToSearch.length() > 3) {
 			searchService.suggest(textToSearch, callback);
+		} else {
+			suggestBox.clear();
 		}
 		
 	}
