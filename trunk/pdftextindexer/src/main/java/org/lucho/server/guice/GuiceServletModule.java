@@ -3,9 +3,12 @@ package org.lucho.server.guice;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.log4j.Logger;
 import org.lucho.client.SearchRemoteService;
 import org.lucho.server.ExtensionFilter;
 import org.lucho.server.FileResolver;
@@ -16,12 +19,14 @@ import org.lucho.server.lucene.LuceneFactory;
 import org.lucho.server.lucene.SearchFiles;
 import org.lucho.server.lucene.impl.AnalyzerFactoryImpl;
 import org.lucho.server.lucene.impl.FileResolverImpl;
+import org.lucho.server.lucene.impl.IndexFilesAsync;
 import org.lucho.server.lucene.impl.IndexFilesImpl;
 import org.lucho.server.lucene.impl.LuceneFactoryImpl;
 import org.lucho.server.lucene.impl.SearchFilesImpl;
 import org.lucho.server.upload.UploadServlet;
 
 import com.google.inject.Scopes;
+import com.google.inject.name.Names;
 import com.google.inject.servlet.ServletModule;
 
 public class GuiceServletModule extends ServletModule {
@@ -35,6 +40,7 @@ public class GuiceServletModule extends ServletModule {
 
         bind(SearchRemoteService.class).to(SearchRemoteServiceImpl.class);
         bind(IndexFiles.class).to(IndexFilesImpl.class).in(Scopes.SINGLETON);
+        bind(IndexFiles.class).annotatedWith(Names.named("async")).to(IndexFilesAsync.class).in(Scopes.SINGLETON);
         bind(SearchFiles.class).to(SearchFilesImpl.class).in(Scopes.SINGLETON);
         bind(FileFilter.class).toInstance(new ExtensionFilter());
         bind(FileItemFactory.class).to(DiskFileItemFactory.class).in(Scopes.SINGLETON);
@@ -44,10 +50,10 @@ public class GuiceServletModule extends ServletModule {
         Properties properties = new Properties();
         try {
 			properties.load(this.getClass().getResourceAsStream("/org/lucho/server/connection.properties"));
+	        bind(Properties.class).toInstance(properties);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.getLogger(GuiceServletModule.class).error("Unable to load properties file", e);
 		}
-        bind(Properties.class).toInstance(properties);
-        
+        bind(ExecutorService.class).toInstance(Executors.newSingleThreadExecutor());
     }
 }

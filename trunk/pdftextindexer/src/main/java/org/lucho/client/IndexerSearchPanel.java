@@ -38,6 +38,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 	// panel items
 	private ComboBox<Text> inputBox;
 	private TextField<String> suggestBox;
+	private TextField<String> highlightBox;
 	private ListView<Node> listResults;
 
 	// panel buttons
@@ -59,7 +60,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 		cleanButton = new Button("Clear results");
 		cleanButton.addListener(Events.OnClick, new Listener<ButtonEvent>() {
 
-			public void handleEvent(ButtonEvent be) {
+			public void handleEvent(final ButtonEvent be) {
 				listResults.getStore().removeAll();
 				inputBox.setValue(new Text(""));
 			}
@@ -68,15 +69,15 @@ public class IndexerSearchPanel extends LayoutContainer {
 		// reindex button
 		reindexButton = new Button("Rebuild index");
 		reindexButton.addListener(Events.OnClick, new Listener<ButtonEvent>() {
-			public void handleEvent(ButtonEvent be) {
+			public void handleEvent(final ButtonEvent be) {
 				final MessageBox waitBox = MessageBox.wait(Constants.TITLE, "Rebuilding index", "working...");
 				AsyncCallback<Void> callback = new AsyncCallback<Void>() {
-					public void onSuccess(Void result) {
+					public void onSuccess(final Void result) {
 						waitBox.close();
 						inputBox.enable();
 					}
 
-					public void onFailure(Throwable caught) {
+					public void onFailure(final Throwable caught) {
 						waitBox.close();
 						MessageBox.alert(Constants.TITLE, "Couldn't rebuild index!", null);
 						inputBox.enable();
@@ -102,8 +103,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 		loadHistory();
 		inputBox.setFieldLabel("Text search");
 		inputBox.addKeyListener(new KeyListener() {
-
-			public void componentKeyUp(ComponentEvent event) {
+			public void componentKeyUp(final ComponentEvent event) {
 				int code = event.getKeyCode();
 				if (code == KeyCodes.KEY_ENTER) {
 					updateHistory();
@@ -112,13 +112,17 @@ public class IndexerSearchPanel extends LayoutContainer {
 					suggestATerm();
 				}
 			}
-
 		});
 		
 		//suggestion box
 		suggestBox = new TextField<String>();
 		suggestBox.setWidth("100%");
 		suggestBox.setReadOnly(true);
+
+		//highlight box
+		highlightBox = new TextField<String>();
+		highlightBox.setWidth("100%");
+		highlightBox.setReadOnly(true);
 
 		// results list box
 		listResults = new ListView<Node>();
@@ -127,9 +131,20 @@ public class IndexerSearchPanel extends LayoutContainer {
 		listResults.setDisplayProperty("text");
 		listResults.setWidth("100%");
 		listResults.setHeight("100%");
+		listResults.addListener(Events.Select,
+				new Listener<ListViewEvent<Node> >() {
+					public void handleEvent(final ListViewEvent<Node> lve) {
+						Node selectedNode = lve.getModel();
+						if (selectedNode == null) {
+							MessageBox.alert(Constants.TITLE, "Please select a document from the results list.", null);
+						} else {
+							highlight(selectedNode);
+						}
+					}
+				});
 		listResults.addListener(Events.DoubleClick,
 				new Listener<ListViewEvent<Node> >() {
-					public void handleEvent(ListViewEvent<Node> lve) {
+					public void handleEvent(final ListViewEvent<Node> lve) {
 						Node selectedNode = lve.getModel();
 						if (selectedNode == null) {
 							MessageBox.alert(Constants.TITLE, "Please select a document from the results list.", null);
@@ -145,6 +160,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 		panel.add(inputBox);
 		panel.add(suggestBox);	
 		panel.add(listResults);
+		panel.add(highlightBox);
 		panel.setWidth("100%");
 		panel.setHeight(height - 120);
 		searchPanelButtons(panel);
@@ -154,7 +170,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 	protected final void highlightAndDownload(final Node node) {
 		MessageBox.confirm("Download?", "highlighted", new Listener<MessageBoxEvent>() {
 
-			public void handleEvent(MessageBoxEvent be) {
+			public void handleEvent(final MessageBoxEvent be) {
 				if (Dialog.YES.equals(be.getValue())) {
 					Window.open(node.getPath(), "_blank",
 					"menubar=no,location=yes,resizable=no,scrollbars=no,status=no");
@@ -168,7 +184,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 		AsyncCallback<Node[]> callback = new AsyncCallback<Node[]>() {
 
 			// This method will be called if the service call fails
-			public void onFailure(Throwable caught) {
+			public void onFailure(final Throwable caught) {
 				waitBox.close();
 				// Show a message informing the user why the call failed
 				MessageBox box = MessageBox.alert(Constants.TITLE, "Unable to perform search.", null);
@@ -177,7 +193,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 			}
 
 			// This method will be called if the service call succeeds
-			public void onSuccess(Node[] results) {
+			public void onSuccess(final Node[] results) {
 				waitBox.close();
 				// Get the service call result and cast it to the
 				// desired type and display it
@@ -192,9 +208,9 @@ public class IndexerSearchPanel extends LayoutContainer {
 				store.commitChanges();
 			}
 		};
-		String textToSearch = inputBox.getRawValue();
+		String query = inputBox.getRawValue();
 		
-		searchService.searchByText(textToSearch, callback);
+		searchService.searchByText(query, callback);
 	}
 	
 	private void loadHistory() {
@@ -235,20 +251,33 @@ public class IndexerSearchPanel extends LayoutContainer {
 	private void suggestATerm() {
 		AsyncCallback<String> callback = new AsyncCallback<String>() {
 			
-			public void onSuccess(String suggestion) {
+			public void onSuccess(final String suggestion) {
 				suggestBox.setValue("Suggestion: " + suggestion);
 			}
 			
-			public void onFailure(Throwable ignored) {
+			public void onFailure(final Throwable ignored) {
 			}
 		};
-		String textToSearch = inputBox.getRawValue();
-		if (textToSearch.length() > 3) {
-			searchService.suggest(textToSearch, callback);
+		String query = inputBox.getRawValue();
+		if (query.length() > 3) {
+			searchService.suggest(query, callback);
 		} else {
 			suggestBox.clear();
 		}
-		
+	}
+
+	private void highlight(final Node node) {
+		AsyncCallback<String> callback = new AsyncCallback<String>() {
+			
+			public void onSuccess(final String highlight) {
+				highlightBox.setValue(highlight);
+			}
+			
+			public void onFailure(final Throwable ignored) {
+			}
+		};
+		String query = inputBox.getRawValue();
+		searchService.highlight(node, query, callback);
 	}
 
 }

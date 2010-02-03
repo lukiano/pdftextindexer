@@ -2,6 +2,7 @@ package org.lucho.server.lucene.impl;
 
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 import org.apache.log4j.Logger;
@@ -23,17 +24,17 @@ import com.google.inject.Inject;
 public class IndexFilesImpl implements IndexFiles {
 
 	private static final Logger log = Logger.getLogger(IndexFiles.class);
-
+	
 	@Inject
 	private LuceneFactory luceneFactory;
-
+	
 	public void clearIndex() throws IOException {
 		IndexWriter writer = luceneFactory.getWriter();
 		try {
 			writer.deleteAll();
 			writer.commit();
 		} catch (AlreadyClosedException ace) {
-			luceneFactory.open();
+			luceneFactory.reopen();
 		}
 	}
 
@@ -44,7 +45,7 @@ public class IndexFilesImpl implements IndexFiles {
 			writer.optimize();
 			writer.commit();
 		} catch (AlreadyClosedException ace) {
-			luceneFactory.open();
+			luceneFactory.reopen();
 		}
 		luceneFactory.updateSpellIndex();
 	}
@@ -66,10 +67,10 @@ public class IndexFilesImpl implements IndexFiles {
 		log.info("Indexing file " + file.getName());
 		Document document = new Document();
 		document.add(new Field(ServerConstants.PATH_FIELD, file.getURL().toString(), Store.YES,
-				Index.NO));
+				Index.NOT_ANALYZED));
 		ParsingReader parsingReader = new ParsingReader(file.getContent().getInputStream());
-		document.add(new Field(ServerConstants.CONTENTS_FIELD, parsingReader,
-				TermVector.WITH_POSITIONS_OFFSETS));
+		document.add(new Field(ServerConstants.CONTENTS_FIELD, IOUtils.toString(parsingReader),
+				Store.YES, Index.ANALYZED, TermVector.WITH_POSITIONS_OFFSETS));
 		try {
 			writer.addDocument(document);
 		} catch (IOException e) {

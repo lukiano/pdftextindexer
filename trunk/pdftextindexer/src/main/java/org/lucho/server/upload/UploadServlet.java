@@ -24,6 +24,7 @@ import org.lucho.server.lucene.IndexFiles;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 @Singleton
 public class UploadServlet extends HttpServlet {
@@ -35,6 +36,7 @@ public class UploadServlet extends HttpServlet {
 	private FileItemFactory fileItemFactory;
 
 	@Inject
+	@Named("async")
 	private IndexFiles indexFiles;
 	
 	@Inject

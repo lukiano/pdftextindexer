@@ -44,7 +44,7 @@ public class LuceneFactoryImpl implements LuceneFactory {
 		return indexWriter;
 	}
 
-	public void open() throws IOException {
+	private void open() throws IOException {
 		Directory directory = FSDirectory.open(getIndexDirectory());
 		indexWriter = new IndexWriter(directory, analyzerFactory
 				.getAnalyzer(), MaxFieldLength.UNLIMITED);
@@ -87,6 +87,10 @@ public class LuceneFactoryImpl implements LuceneFactory {
 		indexSearcher.close();
 		indexReader.close();
 		indexWriter.close();
+	}
+
+	public void reopen() throws IOException {
+		this.open();
 	}
 
 }
