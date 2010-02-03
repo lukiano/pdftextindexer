@@ -88,7 +88,7 @@ public class SearchFilesImpl implements SearchFiles {
 	}
 
 	public String suggest(final String queryString) throws IOException {
-		String[] suggestions = luceneFactory.getSpellChecker().suggestSimilar(queryString, 1);
+		String[] suggestions = luceneFactory.getSpellChecker().suggestSimilar(queryString, 5);
 		if (suggestions.length == 0) {
 			return null;
 		}

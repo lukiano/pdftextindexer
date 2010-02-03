@@ -16,6 +16,7 @@ import org.lucho.server.lucene.SearchFiles;
 
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 @RemoteServiceRelativePath("searchRemoteService")
 public class SearchRemoteServiceImpl extends HttpServlet implements
@@ -28,6 +29,7 @@ public class SearchRemoteServiceImpl extends HttpServlet implements
 	private SearchFiles searchFiles;
 
 	@Inject
+	@Named("async")
 	private IndexFiles indexFiles;
 	
 	@Inject

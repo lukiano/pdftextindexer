@@ -1,17 +1,16 @@
 package org.lucho.server.lucene;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.spell.SpellChecker;
 
-public interface LuceneFactory {
+public interface LuceneFactory extends Closeable {
 	
-	void open() throws IOException;
+	void reopen() throws IOException;
 	
-	void close() throws IOException;
-
 	IndexWriter getWriter();
 
 	IndexSearcher getSearcher();
