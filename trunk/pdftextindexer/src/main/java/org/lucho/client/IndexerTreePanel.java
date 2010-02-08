@@ -1,5 +1,7 @@
 package org.lucho.client;
 
+import java.util.List;
+
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -63,7 +65,13 @@ public class IndexerTreePanel extends LayoutContainer {
 				Node selectedNode = (Node) tpe.getNode().getModel();
 				if (selectedNode == null) {
 					MessageBox.alert(Constants.TITLE, "No document has been selected", null);
+				} else if (selectedNode.hasChildren()) {
+					// branch
+					if (selectedNode.isLeaf()) {
+						fillChidrenNodes(fileTree.getStore(), selectedNode);
+					}
 				} else if (!selectedNode.hasChildren()) {
+					//leaf
 					Window.open(selectedNode.getPath(), "_blank",
 					"menubar=no,location=yes,resizable=no,scrollbars=no,status=no");
 				}
@@ -96,7 +104,7 @@ public class IndexerTreePanel extends LayoutContainer {
 				// documentation for
 				// further explanation).
 				fileTree.getStore().removeAll();
-				fillModel(fileTree.getStore());
+				fillRootNodes(fileTree.getStore());
 				MessageBox.alert(Constants.TITLE, be.getResultHtml(), null);
 				
 			}
@@ -145,15 +153,13 @@ public class IndexerTreePanel extends LayoutContainer {
 		this.add(formPanel);
 		
 		// load tree for first time
-		fillModel(fileTree.getStore());
+		fillRootNodes(fileTree.getStore());
 	}
 
-	private void fillModel(final TreeStore<Node> model) {
-		
-		AsyncCallback<Node> asyncCallback = new AsyncCallback<Node>() {
-
-			public void onSuccess(Node result) {
-				model.add(result, true);
+	private void fillRootNodes(final TreeStore<Node> model) {
+		AsyncCallback<List<Node>> asyncCallback = new AsyncCallback<List<Node>>() {
+			public void onSuccess(final List<Node> result) {
+				model.add(result, false);
 				uploadButton.setEnabled(true);
 			}
 
@@ -163,9 +169,27 @@ public class IndexerTreePanel extends LayoutContainer {
 				box.show();
 				uploadButton.setEnabled(true);
 			}
-
 		};
-		searchService.listFiles(asyncCallback);
+		searchService.listRootNodes(asyncCallback);
+	}
+
+	private void fillChidrenNodes(final TreeStore<Node> model, final Node parent) {
+		AsyncCallback<List<Node>> asyncCallback = new AsyncCallback<List<Node>>() {
+			public void onSuccess(final List<Node> result) {
+				parent.removeAll();
+				model.add(parent, result, true);
+				for (Node resultNode : result) {
+					parent.add(resultNode);
+				}
+			}
+
+			public void onFailure(Throwable caught) {
+				MessageBox box = MessageBox.alert(Constants.TITLE, "Unable to load tree. (" + caught.getMessage() + ")", null);
+				box.setIcon(MessageBox.ERROR);
+				box.show();
+			}
+		};
+		searchService.listChildren(parent, asyncCallback);
 	}
 
 }
