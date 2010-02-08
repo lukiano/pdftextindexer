@@ -1,6 +1,7 @@
 package org.lucho.server;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -52,28 +53,32 @@ public class SearchRemoteServiceImpl extends HttpServlet implements
 			throw new RuntimeException(e);
 		}
 	}
-
-	public Node listFiles() {
+	
+	public List<Node> listChildren(Node parent) {
 		try {
-			FileObject rootFile = fileResolver.getBaseFolder();
-			Node rootNode = Node.create("root");
-			rootNode.hasChildren(true);
-			addFile(rootNode, rootFile);
-			return rootNode;
+			FileObject parentFile = fileResolver.getFile(parent.getPath());
+			return getChildren(parentFile);
 		} catch (FileSystemException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void addFile(final Node node, final FileObject file) throws FileSystemException {
-		FileObject[] children = file.getChildren();
-		for (FileObject child : children) {
-			Node newNode = fileToNode(child);
-			node.add(newNode);
-			if (isFolder(child)) {
-				addFile(newNode, child);
-			}
+	public List<Node> listRootNodes() {
+		try {
+			FileObject rootFile = fileResolver.getBaseFolder();
+			return getChildren(rootFile);
+		} catch (FileSystemException e) {
+			throw new RuntimeException(e);
 		}
+	}
+
+	private List<Node> getChildren(final FileObject file) throws FileSystemException {
+		FileObject[] children = file.getChildren();
+		List<Node> returnNodes = new ArrayList<Node>();
+		for (FileObject child : children) {
+			returnNodes.add(fileToNode(child));
+		}
+		return returnNodes;
 	}
 
 	private boolean isFolder(FileObject child) throws FileSystemException {

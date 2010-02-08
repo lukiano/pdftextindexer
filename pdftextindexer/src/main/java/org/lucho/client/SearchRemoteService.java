@@ -1,12 +1,16 @@
 package org.lucho.client;
 
+import java.util.List;
+
 import com.google.gwt.user.client.rpc.RemoteService;
 
 public interface SearchRemoteService extends RemoteService {
 	
 	public Node[] searchByText(String text);
 	
-	public Node listFiles();
+	public List<Node> listRootNodes();
+	
+	public List<Node> listChildren(Node parent);
 	
 	public void reindex();
 	
