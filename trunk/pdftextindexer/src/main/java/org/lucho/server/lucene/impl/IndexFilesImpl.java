@@ -14,6 +14,8 @@ import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.tika.parser.ParsingReader;
+import org.lucho.client.Node;
+import org.lucho.server.FileResolver;
 import org.lucho.server.ServerConstants;
 import org.lucho.server.lucene.IndexFiles;
 import org.lucho.server.lucene.LuceneFactory;
@@ -27,7 +29,10 @@ public class IndexFilesImpl implements IndexFiles {
 	
 	@Inject
 	private LuceneFactory luceneFactory;
-	
+
+	@Inject
+	private FileResolver fileResolver;
+
 	public void clearIndex() throws IOException {
 		IndexWriter writer = luceneFactory.getWriter();
 		try {
@@ -37,11 +42,15 @@ public class IndexFilesImpl implements IndexFiles {
 			luceneFactory.reopen();
 		}
 	}
+	
+	public void index(final Node node) throws IOException {
+		index(fileResolver.nodeToFile(node));		
+	}
 
-	public void index(final FileObject docsDir) throws IOException {
+	public void index(final FileObject file) throws IOException {
 		IndexWriter writer = luceneFactory.getWriter();
 		try {
-			indexDocs(writer, docsDir);
+			indexDocs(writer, file);
 			writer.optimize();
 			writer.commit();
 		} catch (AlreadyClosedException ace) {
