@@ -1,6 +1,5 @@
 package org.lucho.client;
 
-import com.extjs.gxt.charts.client.model.Text;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -17,26 +16,21 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.ListView;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class IndexerSearchPanel extends LayoutContainer {
 	
-	private static final String TEXTINDEXERHISTORY_COOKIE_NAME = "textindexerhistory";
-	private static final String HISTORY_SEPARATOR = "\\\\\\\\";
-	private final int width;
 	private final int height;
 
 	// services
 	private SearchRemoteServiceAsync searchService;
 	
 	// panel items
-	private ComboBox<Text> inputBox;
+	private TextField<String> inputBox;
 	private TextField<String> suggestBox;
 	private TextField<String> highlightBox;
 	private ListView<Node> listResults;
@@ -47,7 +41,6 @@ public class IndexerSearchPanel extends LayoutContainer {
 
 	public IndexerSearchPanel(final SearchRemoteServiceAsync searchService, final int width, final int height) {
 		this.searchService = searchService;
-		this.width = width;
 		this.height = height;
 		this.setBorders(false);
 		this.setLayout(new VBoxLayout());
@@ -62,7 +55,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 
 			public void handleEvent(final ButtonEvent be) {
 				listResults.getStore().removeAll();
-				inputBox.setValue(new Text(""));
+				inputBox.clear();
 			}
 		});
 
@@ -95,18 +88,15 @@ public class IndexerSearchPanel extends LayoutContainer {
 	}
 
 	private Component searchPanelItems() {
-		// input search combo box
-		inputBox = new ComboBox<Text>();
-		inputBox.setStore(new ListStore<Text>());
+		// input search text box
+		inputBox = new TextField<String>();
 		inputBox.setEmptyText("Type query here...");
 		inputBox.setWidth("100%");
-		loadHistory();
 		inputBox.setFieldLabel("Text search");
 		inputBox.addKeyListener(new KeyListener() {
 			public void componentKeyUp(final ComponentEvent event) {
 				int code = event.getKeyCode();
 				if (code == KeyCodes.KEY_ENTER) {
-					updateHistory();
 					searchByText();
 				} else {
 					suggestATerm();
@@ -208,46 +198,11 @@ public class IndexerSearchPanel extends LayoutContainer {
 				store.commitChanges();
 			}
 		};
-		String query = inputBox.getRawValue();
+		String query = inputBox.getValue();
 		
 		searchService.searchByText(query, callback);
 	}
 	
-	private void loadHistory() {
-		String history = Cookies.getCookie(TEXTINDEXERHISTORY_COOKIE_NAME);
-		ListStore<Text> store = inputBox.getStore();
-		store.removeAll();
-		if (history != null) {
-			for (String line : history.split(HISTORY_SEPARATOR)) {
-				if (!line.isEmpty()) {
-					store.add(new Text(line));
-				}
-			}
-		}
-	}
-	
-	private void updateHistory() {
-		ListStore<Text> store = inputBox.getStore();
-		int count = Math.max(10, store.getCount());
-		StringBuilder stringBuilder = new StringBuilder();
-		if (count > 0) {
-			for (int i = 0; (i < count - 1); i++) {
-				Text line = store.getAt(i);
-				if (line != null) {
-					stringBuilder.append(line.getText());
-					stringBuilder.append(HISTORY_SEPARATOR);
-				}
-			}
-			Text line = store.getAt(count - 1);
-			if (line != null) {
-				stringBuilder.append(line.getText());
-			}
-			
-		}
-		Cookies.setCookie(TEXTINDEXERHISTORY_COOKIE_NAME, stringBuilder.toString());
-	}
-	
-
 	private void suggestATerm() {
 		AsyncCallback<String> callback = new AsyncCallback<String>() {
 			
@@ -258,7 +213,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 			public void onFailure(final Throwable ignored) {
 			}
 		};
-		String query = inputBox.getRawValue();
+		String query = inputBox.getValue();
 		if (query.length() > 3) {
 			searchService.suggest(query, callback);
 		} else {
@@ -276,7 +231,7 @@ public class IndexerSearchPanel extends LayoutContainer {
 			public void onFailure(final Throwable ignored) {
 			}
 		};
-		String query = inputBox.getRawValue();
+		String query = inputBox.getValue();
 		searchService.highlight(node, query, callback);
 	}
 
