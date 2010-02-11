@@ -33,7 +33,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class IndexerTreePanel extends LayoutContainer {
 
-	private final int width;
 	private final int height;
 
 	// services
@@ -52,7 +51,6 @@ public class IndexerTreePanel extends LayoutContainer {
 		this.setLayout(new VBoxLayout());
 		// this.setTableHeight("100%");
 		// this.setTableWidth("100%");
-		this.width = width;
 		this.height = height;
 		treePanelItems();
 		this.setSize(width, height);
@@ -64,7 +62,9 @@ public class IndexerTreePanel extends LayoutContainer {
 			@Override
 			protected void load(final Object node,
 					final AsyncCallback<List<Node>> callback) {
-				searchService.listChildren((Node) node, callback);
+				if (node != null) {
+					searchService.listChildren((Node) node, callback);
+				}
 			}
 		};
 		// file tree
@@ -106,15 +106,12 @@ public class IndexerTreePanel extends LayoutContainer {
 				if (record.hasChildren()) {
 					return false;
 				}
-				String name = record.getText();
-				name = name.toLowerCase();
-				if (name.startsWith(filter.toLowerCase())) {
-					return true;
-				}
-				return false;
+				return filter.toLowerCase().matches(filter.toLowerCase());
 			}
 
 		};
+		nodeFilter.setEmptyText("Enter a filter");
+		nodeFilter.setAllowBlank(false);
 		nodeFilter.setWidth("100%");
 		nodeFilter.bind(store);
 
@@ -194,8 +191,8 @@ public class IndexerTreePanel extends LayoutContainer {
 		formPanel.addButton(uploadButton);
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 
-		this.add(nodeFilter);
 		this.add(filePanel);
+		this.add(nodeFilter);
 		this.add(formPanel);
 
 		// load tree for first time
